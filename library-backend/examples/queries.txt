@@ -1,0 +1,40 @@
+query AllBooksByAuthorAndGenre {
+  allBooks(author: "Robert Martin", genre: "refactoring") {
+    title
+    author
+  }
+}
+
+query AllBooksByGenre {
+  allBooks(genre: "refactoring") {
+    title
+    author
+  }
+}
+
+query AllBooksByAuthor {
+  allBooks(author: "Robert Martin") {
+    title
+  }
+}
+
+query AllAuthorsWithBookCount {
+  allAuthors {
+    name
+    bookCount
+  }
+}
+
+query AllBooksQuery {
+  allBooks { 
+    title 
+    author
+    published 
+    genres
+  }
+}
+
+query CountQuery {
+  bookCount
+  authorCount
+}
