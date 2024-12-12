@@ -1,0 +1,21 @@
+@use 'bootstrap/dist/css/bootstrap.min.css';
+
+.notification {
+  z-index: 2000;
+
+  .alert-heading:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.author-row {
+  cursor: pointer;
+}
+
+.edit-container {
+  width: 320px;
+
+  .born-input {
+    width: 100px;
+  }
+}

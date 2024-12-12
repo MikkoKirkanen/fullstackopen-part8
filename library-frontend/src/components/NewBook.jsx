@@ -1,70 +1,113 @@
 import { useState } from 'react'
+import { Form, Button, InputGroup } from 'react-bootstrap'
+import { ALL_AUTHORS, ALL_BOOKS, CREATE_BOOK } from '../queries'
+import { useMutation } from '@apollo/client'
+import {
+  showError,
+  useNotificationDispatch,
+} from '../contexts/NotificationContext'
 
-const NewBook = (props) => {
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [published, setPublished] = useState('')
+const NewBook = () => {
+  const empty = { title: '', author: '', published: '', genres: [] }
+  const [book, setBook] = useState(empty)
   const [genre, setGenre] = useState('')
-  const [genres, setGenres] = useState([])
+  const notificationDispatch = useNotificationDispatch()
 
-  if (!props.show) {
-    return null
+  const [createBook] = useMutation(CREATE_BOOK, {
+    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    onCompleted: (res) => {
+      const book = res.addBook
+      const title = book.title + (book.author ? ` by ${book.author}` : '')
+      notificationDispatch({
+        message: `New book added: ${title}`,
+        type: 'success',
+      })
+      setBook(empty)
+      setGenre('')
+    },
+    onError: (e) => {
+      const message = 'Error creating book'
+      const messages = e.graphQLErrors?.map((e) => e.message)
+      notificationDispatch(showError({ message, messages }))
+    },
+  })
+
+  const submit = async (e) => {
+    e.preventDefault()
+    createBook({ variables: book })
   }
 
-  const submit = async (event) => {
-    event.preventDefault()
-
-    console.log('add book...')
-
-    setTitle('')
-    setPublished('')
-    setAuthor('')
-    setGenres([])
-    setGenre('')
+  const handleBookChanges = ({ target }) => {
+    const value =
+      target.name === 'published' ? Number(target.value) : target.value
+    setBook((state) => ({
+      ...state,
+      [target.name]: value,
+    }))
   }
 
   const addGenre = () => {
-    setGenres(genres.concat(genre))
+    if (!genre) return null
+    setBook((state) => ({
+      ...state,
+      genres: state.genres.concat(genre),
+    }))
     setGenre('')
   }
 
   return (
     <div>
-      <form onSubmit={submit}>
-        <div>
-          title
-          <input
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
+      <Form onSubmit={submit}>
+        <Form.Group className='mb-3' controlId='title'>
+          <Form.Label>Title</Form.Label>
+          <Form.Control
+            type='text'
+            name='title'
+            value={book.title}
+            onChange={handleBookChanges}
           />
-        </div>
-        <div>
-          author
-          <input
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
+        </Form.Group>
+        <Form.Group className='mb-3' controlId='author'>
+          <Form.Label>Author</Form.Label>
+          <Form.Control
+            type='text'
+            name='author'
+            value={book.author}
+            onChange={handleBookChanges}
           />
-        </div>
-        <div>
-          published
-          <input
-            type="number"
-            value={published}
-            onChange={({ target }) => setPublished(target.value)}
+        </Form.Group>
+        <Form.Group className='mb-3' controlId='published'>
+          <Form.Label>Published</Form.Label>
+          <Form.Control
+            type='number'
+            name='published'
+            value={book.published}
+            onChange={handleBookChanges}
           />
-        </div>
-        <div>
-          <input
-            value={genre}
-            onChange={({ target }) => setGenre(target.value)}
-          />
-          <button onClick={addGenre} type="button">
-            add genre
-          </button>
-        </div>
-        <div>genres: {genres.join(' ')}</div>
-        <button type="submit">create book</button>
-      </form>
+        </Form.Group>
+
+        <Form.Group className='mb-3' controlId='genre'>
+          <Form.Label>Genre</Form.Label>
+          <InputGroup>
+            <Form.Control
+              type='text'
+              name='genre'
+              value={genre}
+              onChange={({ target }) => setGenre(target.value)}
+            />
+            <Button variant='primary' onClick={addGenre} type='button'>
+              Add genre
+            </Button>
+          </InputGroup>
+        </Form.Group>
+
+        <Form.Group className='mb-3' controlId='published'>
+          <Form.Label>Genres: {book.genres.join(', ')}</Form.Label>
+        </Form.Group>
+        <Button variant='primary' type='submit'>
+          Create book
+        </Button>
+      </Form>
     </div>
   )
 }

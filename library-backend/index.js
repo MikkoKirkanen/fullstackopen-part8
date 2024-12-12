@@ -125,13 +125,10 @@ const typeDefs = gql`
       title: String!
       author: String!
       published: Int!
-      genres: [String!]
+      genres: [String]
     ): Book
 
-    editAuthor(
-    name: String!
-    setBornTo: Int
-    ): Author
+    editAuthor(name: String!, born: Int): Author
   }
 `
 
@@ -166,13 +163,13 @@ const resolvers = {
       return book
     },
     editAuthor: (root, args) => {
-      const author = authors.find(a => a.name === args.name)
+      const author = authors.find((a) => a.name === args.name)
       if (!author) return null
 
-      const updatedAuthor = { ...author, born: args.setBornTo}
-      authors = authors.map(a => a.name === args.name ? updatedAuthor : a)
+      const updatedAuthor = { ...author, born: args.born }
+      authors = authors.map((a) => (a.name === args.name ? updatedAuthor : a))
       return updatedAuthor
-    }
+    },
   },
 }
 
@@ -183,6 +180,8 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`)
 })
+  .then(({ url }) => {
+    console.log(`Server ready at ${url}`)
+  })
+  .catch((e) => console.log(e))

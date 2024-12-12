@@ -23,7 +23,7 @@ mutation {
 }
 
 mutation {
-  editAuthor(name: "Reijo Mäki", setBornTo: 1958) {
+  editAuthor(name: "Reijo Mäki", born: 1958) {
     name
     born
   }

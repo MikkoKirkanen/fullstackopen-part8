@@ -1,28 +1,110 @@
-const Authors = (props) => {
-  if (!props.show) {
-    return null
+import { useMutation, useQuery } from '@apollo/client'
+import { ALL_AUTHORS, UPDATE_AUTHOR } from '../queries'
+import { Table } from 'react-bootstrap'
+import { useState } from 'react'
+import { Form, Button } from 'react-bootstrap'
+import { showError, useNotificationDispatch } from '../contexts/NotificationContext'
+
+const Authors = () => {
+  const res = useQuery(ALL_AUTHORS)
+  const [author, setAuthor] = useState(null)
+  const notificationDispatch = useNotificationDispatch()
+
+  const [updateAuthor] = useMutation(UPDATE_AUTHOR, {
+    refetchQueries: [{ query: ALL_AUTHORS }],
+    onCompleted: ({editAuthor}) => {
+      const message = `Updated author: ${editAuthor.name}`
+      notificationDispatch({message, type: 'success'})
+      setAuthor(null)
+    },
+    onError: (e) => {
+      const message = 'Error updating author'
+      const messages = e.graphQLErrors?.map((e) => e.message)
+      notificationDispatch(showError({ message, messages }))
+    },
+  })
+
+  if (res.loading) {
+    return <div>Loading...</div>
   }
-  const authors = []
+
+  const editAuthor = (a) => {
+    setAuthor({
+      ...a,
+      born: a.born !== null ? a.born : '',
+    })
+  }
+
+  const handleBornChanges = ({ target }) => {
+    setAuthor((a) => ({
+      ...a,
+      born: target.value,
+    }))
+  }
+
+  const submit = (e) => {
+    e.preventDefault()
+    const name = author.name
+    const born = author.born === '' ? null : Number(author.born)
+    updateAuthor({ variables: { name, born } })
+  }
+
+  const getAuthorEdit = () => {
+    if (!author) return null
+
+    return (
+      <div className='edit-container'>
+        <h2>Edit author's birthyear</h2>
+        <Form onSubmit={submit}>
+          <Form.Group controlId='title'>
+            <Form.Label>Name: {author.name}</Form.Label>
+          </Form.Group>
+          <Form.Group className='mb-3' controlId='title'>
+            <Form.Label>Born</Form.Label>
+            <Form.Control
+              type='number'
+              className='born-input'
+              name='born'
+              value={author.born}
+              onChange={handleBornChanges}
+            />
+          </Form.Group>
+          <div className='d-flex justify-content-between'>
+          <Button variant='secondary' onClick={() => setAuthor(null)}>Cancel</Button>
+          <Button variant='primary' type='submit'>
+            Update author
+          </Button>
+          </div>
+        </Form>
+      </div>
+    )
+  }
+
+  const authors = res.data.allAuthors || []
 
   return (
     <div>
-      <h2>authors</h2>
-      <table>
-        <tbody>
+      <h1>Authors</h1>
+      <div className='text-info'>Click row to edit author's birthyear</div>
+      <Table className='w-auto' borderless hover>
+        <thead>
           <tr>
-            <th></th>
-            <th>born</th>
-            <th>books</th>
+            <th>Name</th>
+            <th>Born</th>
+            <th>Books</th>
           </tr>
-          {authors.map((a) => (
-            <tr key={a.name}>
+        </thead>
+        <tbody>
+          {authors?.map((a) => (
+            <tr key={a.name} className='author-row' onClick={() => editAuthor(a)}>
               <td>{a.name}</td>
-              <td>{a.born}</td>
-              <td>{a.bookCount}</td>
+              <td className='text-end'>{a.born}</td>
+              <td className='text-end'>{a.bookCount}</td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
+      {getAuthorEdit()}
     </div>
   )
 }

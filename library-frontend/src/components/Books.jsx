@@ -1,30 +1,36 @@
-const Books = (props) => {
-  if (!props.show) {
-    return null
+import { useQuery } from '@apollo/client'
+import { ALL_BOOKS } from '../queries'
+import { Table } from 'react-bootstrap'
+
+const Books = () => {
+  const res = useQuery(ALL_BOOKS)
+
+  if (res.loading) {
+    return <div>Loading...</div>
   }
 
-  const books = []
+  const books = res.data.allBooks || []
 
   return (
     <div>
-      <h2>books</h2>
+      <h1>Books</h1>
 
-      <table>
+      <Table striped borderless>
         <tbody>
           <tr>
-            <th></th>
-            <th>author</th>
-            <th>published</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Published</th>
           </tr>
-          {books.map((a) => (
-            <tr key={a.title}>
-              <td>{a.title}</td>
-              <td>{a.author}</td>
-              <td>{a.published}</td>
+          {books.map((b, i) => (
+            <tr key={i}>
+              <td>{b.title}</td>
+              <td>{b.author}</td>
+              <td className='text-end'>{b.published}</td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     </div>
   )
 }
