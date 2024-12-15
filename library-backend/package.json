@@ -20,8 +20,12 @@
   "homepage": "https://github.com/MikkoKirkanen/fullstackopen-part8#readme",
   "dependencies": {
     "@apollo/server": "^4.11.2",
+    "dotenv": "^16.4.7",
     "graphql": "^16.9.0",
     "graphql-tag": "^2.12.6",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.4",
+    "mongoose-unique-validator": "^4.0.1",
     "nodemon": "^3.1.7",
     "uuid": "^11.0.3"
   }

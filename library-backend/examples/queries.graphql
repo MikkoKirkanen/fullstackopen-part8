@@ -1,14 +1,18 @@
 query AllBooksByAuthorAndGenre {
   allBooks(author: "Robert Martin", genre: "refactoring") {
     title
-    author
+    author {
+      name
+    }
   }
 }
 
 query AllBooksByGenre {
   allBooks(genre: "refactoring") {
     title
-    author
+    author {
+      name
+    }
   }
 }
 

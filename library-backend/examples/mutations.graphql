@@ -1,0 +1,47 @@
+mutation {
+  addBook(
+    title: "NoSQL Distilled"
+    author: "Martin Fowler"
+    published: 2012
+    genres: ["database", "nosql"]
+  ) {
+    title
+    author {
+      name
+    }
+  }
+}
+
+mutation {
+  addBook(
+    title: "Pimeyden tango"
+    author: "Reijo Mäki"
+    published: 1997
+    genres: ["crime"]
+  ) {
+    title
+    author {
+      name
+    }
+  }
+}
+
+mutation {
+  editAuthor(name: "Reijo Mäki", born: 1958) {
+    name
+    born
+  }
+}
+
+mutation {
+  createUser(username: "hessu", favoriteGenre: "agile") {
+    username
+    favoriteGenre
+  }
+}
+
+mutation {
+  login(username: "hessu", password: "password") {
+    value
+  }
+}
