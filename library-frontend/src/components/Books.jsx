@@ -1,20 +1,36 @@
 import { useQuery } from '@apollo/client'
-import { ALL_BOOKS } from '../queries'
-import { Table } from 'react-bootstrap'
+import { ALL_BOOKS, ALL_GENRES } from '../queries'
+import { Form, Table } from 'react-bootstrap'
+import { useState } from 'react'
 
 const Books = () => {
-  const res = useQuery(ALL_BOOKS)
+  const [genre, setGenre] = useState('')
+  const bookRes = useQuery(ALL_BOOKS, {
+    variables: { genre },
+  })
+  const genreRes = useQuery(ALL_GENRES)
 
-  if (res.loading) {
-    return <div>Loading...</div>
+  const handleGenreSelect = (e) => {
+    setGenre(e.target.value)
   }
 
-  const books = res.data.allBooks || []
+  const books = bookRes?.data?.allBooks || []
+  const genres = genreRes?.data?.allGenres || []
 
   return (
     <div>
       <h1>Books</h1>
-
+      <Form.Group className='mb-3' controlId='genres'>
+        <Form.Label>Selected genre</Form.Label>
+        <Form.Select className='text-capitalize' value={genre} onChange={handleGenreSelect}>
+          <option value=''>all</option>
+          {genres?.map((g) => (
+            <option key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </Form.Select>
+      </Form.Group>
       <Table striped borderless>
         <tbody>
           <tr>
@@ -25,7 +41,7 @@ const Books = () => {
           {books.map((b, i) => (
             <tr key={i}>
               <td>{b.title}</td>
-              <td>{b.author}</td>
+              <td>{b.author.name}</td>
               <td className='text-end'>{b.published}</td>
             </tr>
           ))}

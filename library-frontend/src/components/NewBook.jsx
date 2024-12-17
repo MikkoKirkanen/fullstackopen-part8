@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Form, Button, InputGroup } from 'react-bootstrap'
-import { ALL_AUTHORS, ALL_BOOKS, CREATE_BOOK } from '../queries'
+import { ALL_AUTHORS, ALL_BOOKS, ALL_GENRES, CREATE_BOOK } from '../queries'
 import { useMutation } from '@apollo/client'
 import {
   showError,
@@ -14,10 +14,15 @@ const NewBook = () => {
   const notificationDispatch = useNotificationDispatch()
 
   const [createBook] = useMutation(CREATE_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    refetchQueries: [
+      { query: ALL_BOOKS, variables: { genre: '' } },
+      { query: ALL_AUTHORS },
+      { query: ALL_GENRES },
+    ],
     onCompleted: (res) => {
       const book = res.addBook
-      const title = book.title + (book.author ? ` by ${book.author}` : '')
+      const title =
+        book.title + (book.author?.name ? ` by ${book.author.name}` : '')
       notificationDispatch({
         message: `New book added: ${title}`,
         type: 'success',
@@ -26,14 +31,22 @@ const NewBook = () => {
       setGenre('')
     },
     onError: (e) => {
-      const message = 'Error creating book'
-      const messages = e.graphQLErrors?.map((e) => e.message)
-      notificationDispatch(showError({ message, messages }))
+      notificationDispatch(showError(e.graphQLErrors))
     },
   })
 
   const submit = async (e) => {
     e.preventDefault()
+    if (book.published === '') {
+      return notificationDispatch(
+        showError([
+          {
+            message: 'Book validation failed',
+            extensions: { error: { message: 'Published is required' } },
+          },
+        ])
+      )
+    }
     createBook({ variables: book })
   }
 

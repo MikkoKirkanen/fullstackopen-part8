@@ -33,10 +33,13 @@ export const NotificationContextProvider = (props) => {
   )
 }
 
-export const showError = (data) => {
+export const showError = (errors) => {
+  const message = errors?.[0]?.message
+  const messages = errors?.map(e => e.extensions?.error?.message).filter(e => e)
   return {
     type: 'danger',
-    ...data,
+    message,
+    messages
   }
 }
 

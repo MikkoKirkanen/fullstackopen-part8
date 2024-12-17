@@ -27,12 +27,13 @@ const typeDefs = gql`
 
   type User {
     username: String!
+    name: String!
     favoriteGenre: String!
     id: ID!
   }
 
   type Token {
-    value: String!
+    token: String!
   }
 
   type Query {
@@ -40,7 +41,8 @@ const typeDefs = gql`
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
-    me: User
+    user: User
+    allGenres: [String!]!
   }
 
   type Mutation {
@@ -72,9 +74,10 @@ const resolvers = {
       return Book.find(query).populate('author')
     },
     allAuthors: async () => Author.find({}),
-    me: (root, args, context) => {
+    user: (root, args, context) => {
       return context.currentUser
     },
+    allGenres: async () => Book.find().distinct('genres'),
   },
   Author: {
     name: (root) => root.name,
@@ -84,6 +87,7 @@ const resolvers = {
   Mutation: {
     createUser: async (root, args) => {
       const user = new User({
+        name: args.name,
         username: args.username,
         favoriteGenre: args.favoriteGenre,
       })
@@ -99,7 +103,7 @@ const resolvers = {
       const user = await User.findOne({ username: args.username })
 
       if (!user || args.password !== 'password') {
-        throw new GraphQLError('wrong credentials', {
+        throw new GraphQLError('Wrong username or password', {
           extensions: { code: 'BAD_USER_INPUT' },
         })
       }
@@ -109,7 +113,7 @@ const resolvers = {
         id: user._id,
       }
 
-      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
+      return { token: jwt.sign(userForToken, process.env.JWT_SECRET) }
     },
     addBook: async (root, args, context) => {
       const currentUser = context.currentUser
@@ -118,7 +122,7 @@ const resolvers = {
         throw new GraphQLError('Not authenticated', {
           extensions: {
             code: 'BAD_USER_INPUT',
-          }
+          },
         })
       }
 
@@ -140,7 +144,6 @@ const resolvers = {
       await book.save().catch((error) => {
         throw new GraphQLError('Adding book failed', {
           extensions: {
-            code: 'BAD_USER_INPUT',
             error,
           },
         })
@@ -154,7 +157,7 @@ const resolvers = {
         throw new GraphQLError('Not authenticated', {
           extensions: {
             code: 'BAD_USER_INPUT',
-          }
+          },
         })
       }
       const author = await Author.findOne({ name: args.name })

@@ -6,6 +6,7 @@ import Notification from './components/Notification'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
+import Recommendations from './components/Recommendations'
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
           <Route path='/' element={<Authors />}></Route>
           <Route path='/books' element={<Books />}></Route>
           <Route path='/add' element={<NewBook />}></Route>
+          <Route path='/recommendations' element={<Recommendations />}></Route>
         </Routes>
       </Container>
     </Router>

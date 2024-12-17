@@ -30,10 +30,12 @@ query AllAuthorsWithBookCount {
 }
 
 query AllBooksQuery {
-  allBooks { 
-    title 
-    author
-    published 
+  allBooks {
+    title
+    author {
+      name
+    }
+    published
     genres
   }
 }
