@@ -61,6 +61,7 @@ const Login = () => {
   const handleLogout = () => {
     localStorage.clear()
     client.resetStore()
+    notificationDispatch({ message: 'Logout successful', type: 'info'})
   }
 
   const loggedIn = () => {

@@ -1,3 +1,6 @@
+import { useNotificationDispatch } from './contexts/NotificationContext'
+import { useApolloClient, useSubscription } from '@apollo/client'
+import { ALL_AUTHORS, ALL_BOOKS, ALL_GENRES, BOOK_ADDED } from './queries'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Container } from 'react-bootstrap'
 
@@ -9,6 +12,20 @@ import NewBook from './components/NewBook'
 import Recommendations from './components/Recommendations'
 
 const App = () => {
+  const notificationDispatch = useNotificationDispatch()
+  const client = useApolloClient()
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      const book = data.data.bookAdded
+      const message = `New book has added: ${book.title} by ${book.author.name}`
+      notificationDispatch({ message, type: 'info' })
+      client.refetchQueries({
+        include: [ALL_BOOKS, ALL_AUTHORS, ALL_GENRES],
+      })
+    },
+  })
+
   return (
     <Router>
       <Container>
